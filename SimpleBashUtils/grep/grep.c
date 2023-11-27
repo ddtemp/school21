@@ -1,101 +1,210 @@
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <getopt.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <regex.h>
-#include <stdlib.h>
+#include "grep.h"
 
+int main(int argc, char *argv[]) {
+  GrepOptions flags = {0};
+  if (!GrepReadFlags(argc, argv, &flags))
+    GrepWithArgs(argv, argc, flags);
+  else
+    fprintf(stderr, "%s", error);
+  return 0;
+}
 
-typedef struct { 
-    int regex_flag;
-    bool invert;
-    bool count;
-    bool filesMatch;
-    bool numberLine;
-} Options;
-
-#if 0
-Options CatReadFlags (int argc, char *argv[]) {
-
-    int currentFlag = getopt_long(argc, argv, "bevEnstT", longOptions, NULL);
-    Options flags = {false, false, false, false, false, false};
-    for (;currentFlag != -1
-            ; currentFlag = getopt_long(argc, argv, "bevEnstT", longOptions, NULL)) {
-        switch (currentFlag) {
-        case 'b':
-            flags.numberNonBlank = true;
-            break; 
+int GrepReadFlags(int argc, char *argv[], GrepOptions *flags) {
+  char buffer[SIZE] = {0};
+  if (argc > 2) {
+    int currentFlag = getopt(argc, argv, "e:ivclnhsf:o");
+    while (currentFlag != -1) {
+      switch (currentFlag) {
         case 'e':
-            flags.markEndl = true;
-            __attribute__((fallthrough));
+          if (!flags->pattern && !flags->file) {
+            flags->pattern = 1;
+            strcat(flags->searchPattern, optarg);
+          } else if (!flags->pattern && flags->file) {
+            flags->pattern = 1;
+            strcat(flags->searchPattern, "|\0");
+            strcat(flags->searchPattern, optarg);
+          } else {
+            strcat(flags->searchPattern, "|\0");
+            strcat(flags->searchPattern, optarg);
+          }
+          break;
+        case 'i':
+          flags->ignoreCase = 1;
+          break;
         case 'v':
-            flags.printNonPrintable = true;
-            break; 
-        case 'E':
-            flags.markEndl = true;
-            break; 
+          flags->invertMatch = 1;
+          flags->outputMatchedParts = 0;
+          break;
+        case 'c':
+          flags->countOnly = 1;
+          break;
+        case 'l':
+          flags->filesOnly = 1;
+          break;
         case 'n':
-            flags.numberAll = true;
-            break; 
+          flags->lineNumber = 1;
+          break;
+        case 'h':
+          flags->noFileName = 1;
+          break;
         case 's':
-            flags.squeeze = true;
-            break; 
-        case 't':
-            flags.printNonPrintable = true;
-            __attribute__((fallthrough));
-        case 'T':
-            flags.tab = true;
+          flags->suppressErrors = 1;
+          break;
+        case 'f':
+          OpenFileWithRegex(flags, optarg, buffer);
+          if (!flags->file && !flags->pattern) {
+            flags->file = 1;
+            strcat(flags->searchPattern, buffer);
+          } else if (!flags->file && flags->pattern) {
+            flags->file = 1;
+            strcat(flags->searchPattern, "|\0");
+            strcat(flags->searchPattern, buffer);
+          } else {
+            strcat(flags->searchPattern, "|\0");
+            strcat(flags->searchPattern, buffer);
+          }
+          break;
+        case 'o':
+          if (flags->invertMatch == 0) flags->outputMatchedParts = 1;
+          break;
+        default: {
+          flags->isError = 1;
+          flags->errorCode = optopt;
+          break;
         }
+      }
+      currentFlag = getopt(argc, argv, "e:ivclnhsf:o");
     }
-    return flags;
-}
-#endif
-
-void GrepFile(FILE *file, Options flags, regex_t *preg){
-    char *line = 0;
-    size_t length = 0;
-    regmatch_t match;
-    (void)flags;
-    while(getline(&line, &length, file) > 0) {
-        if (!regexec(preg, line, 1, &match, 0)) {
-            printf("%s", line);
-        } 
-    }
-    free(line);
+  } else {
+    flags->isError = 1;
+  }
+  return flags->isError;
 }
 
-void Grep(int argc, char *argv[], Options flags) {
-    char **pattern = &argv[1];
-    char **end = &argv[argc];
-    regex_t preg_storage;
-    regex_t *preg = &preg_storage;
-
-    for (;pattern != end && pattern[0][0] == '-'; ++pattern)
-        ;
-    if (pattern == end) {
-        fprintf(stderr, "no pattern\n");
-        exit(1);
+void OpenFileWithRegex(GrepOptions *flags, char *filename, char *pattern) {
+  FILE *file = fopen(filename, "r");
+  if (file == 0) {
+    if (!flags->suppressErrors) {
+      fprintf(stderr, "s21_grep: %s: No such file or directory\n", filename);
     }
-    if (regcomp(preg, *pattern, 0)){
-        fprintf(stderr, "failed to compile regex\n");
+  } else {
+    char currentCharacter = '\0';
+    char buffer[2] = {'\0'};
+    char fileContent[SIZE] = {'\0'};
+    while ((currentCharacter = getc(file)) != EOF) {
+      buffer[0] = currentCharacter;
+      if (buffer[0] == '\n') {
+        buffer[0] = '|';
+      }
+      strcat(fileContent, buffer);
     }
+    strcat(pattern, fileContent);
+  }
+  fclose(file);
+}
 
-    for (char **filename = pattern + 1; filename != end; ++filename) {
-        if (**filename == '-')
-            continue;
-        FILE *file = fopen(*filename, "rb");
-        if (file == NULL) {
-            fprintf(stderr, "%s", argv[0]);
-            perror(*filename);
-            continue;
+void PrintMatchedParts(char *buffer, GrepOptions flags) {
+  int length = strlen(flags.searchPattern);
+  while (*buffer) {
+    char *result = NULL;
+    if (!flags.ignoreCase) result = strstr(buffer, flags.searchPattern);
+    if (flags.ignoreCase) result = strcasestr(buffer, flags.searchPattern);
+
+    if (result == buffer) {
+      for (int i = 0; i < length; i++) {
+        printf("%c", result[i]);
+      }
+      printf("\n");
+      buffer += length;
+    } else {
+      buffer++;
+    }
+  }
+}
+
+int GrepWithArgs(char *argv[], int argc, GrepOptions flags) {
+  int fileIndex = optind;
+  regex_t regex;
+
+  if (!flags.pattern && !flags.file) {
+    fileIndex++;
+    strcat(flags.searchPattern, argv[optind]);
+    regcomp(&regex, flags.searchPattern, 0);
+  }
+  if (flags.outputMatchedParts || flags.file || flags.pattern)
+    regcomp(&regex, flags.searchPattern, REG_EXTENDED);
+  if (flags.ignoreCase) regcomp(&regex, flags.searchPattern, REG_ICASE);
+  if (argc - fileIndex > 1) flags.fileNameFlag += 1;
+
+  for (int i = fileIndex; i < argc; i++) {
+    sprintf(flags.fileName, "%s", argv[i]);
+    Search(&regex, flags);
+  }
+
+  regfree(&regex);
+  return 0;
+}
+
+void Search(regex_t *regex, GrepOptions flags) {
+  FILE *file = NULL;
+  GrepLogic logic = {0};
+  file = fopen(flags.fileName, "r");
+  int result = 0;
+
+  if (file == NULL) {
+    flags.isError = 1;
+    if (!flags.suppressErrors) {
+      fprintf(stderr, "s21_grep: %s: No such file or directory\n",
+              flags.fileName);
+    }
+  } else {
+    while (fgets(logic.buffer, SIZE, file) != NULL && !flags.isError) {
+      logic.lineCount++;
+      result = regexec(regex, logic.buffer, 0, NULL, 0);
+
+      if (flags.invertMatch && !flags.outputMatchedParts) {
+        result = !result;
+      }
+
+      if (!result) {
+        logic.MatchCount++;
+
+        if (flags.fileNameFlag && !flags.noFileName && !flags.filesOnly &&
+            !flags.countOnly) {
+          printf("%s:", flags.fileName);
+          logic.printFile++;
         }
-        GrepFile(file, flags, preg);
-        fclose(file);
+        if (flags.fileNameFlag && !flags.noFileName && !flags.filesOnly &&
+            !flags.countOnly && !logic.printFile) {
+          printf("%s:", flags.fileName);
+          logic.printFile++;
+        }
+        if (flags.filesOnly && !flags.countOnly && !logic.printFlagL) {
+          printf("%s\n", flags.fileName);
+          logic.printFlagL++;
+        }
+        if (flags.lineNumber && !flags.countOnly && !flags.filesOnly) {
+          printf("%d:", logic.lineCount);
+        }
+        if (!flags.countOnly && flags.outputMatchedParts && !flags.filesOnly) {
+          PrintMatchedParts(logic.buffer, flags);
+        }
+        if (!flags.countOnly && !flags.filesOnly && !flags.outputMatchedParts) {
+          printf("%s", logic.buffer);
+          if (logic.buffer[strlen(logic.buffer) - 1] != '\n') printf("\n");
+        }
+      }
     }
-}
 
-int main (int argc, char *argv[]) {
-    Options flags = {1};
-    Grep(argc, argv, flags);
+    if (flags.fileNameFlag && !logic.printFile && !flags.filesOnly &&
+        flags.countOnly) {
+      printf("%s:", flags.fileName);
+      logic.printFile++;
+    }
+    if (!logic.printFlagC && flags.countOnly) {
+      printf("%d\n", logic.MatchCount);
+      logic.printFlagC = 1;
+    }
+    fclose(file);
+  }
 }
