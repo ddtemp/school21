@@ -69,11 +69,11 @@ Options CatReadFlags(int argc, char *argv[]) {
   return flags;
 }
 
-void PrintFileContent(char *filename, Options flags) {
+void PrintFileContent(char *filename, Options flags, int *globalCounter) {
   FILE *file = NULL;
   file = fopen(filename, "r");
-  int counter = 0, isCurrentLineEmpty = 0, isPrevLineEmpty = 0;
-  char currentCharacter = fgetc(file);
+  int isCurrentLineEmpty = 0, isPrevLineEmpty = 0;
+  int currentCharacter = fgetc(file);
   char prevCharacter = '\n';
 
   while (currentCharacter != EOF) {
@@ -86,10 +86,9 @@ void PrintFileContent(char *filename, Options flags) {
     if (!(flags.squeeze && isPrevLineEmpty && isCurrentLineEmpty)) {
       if (prevCharacter == '\n') {
         if (flags.numberAll || (flags.numberNonBlank && !isCurrentLineEmpty)) {
-          printf("%6d\t", ++counter);
+          printf("%6d\t", ++(*globalCounter));
         }
       }
-
       if (flags.markEndl && currentCharacter == '\n') {
         printf("$\n");
       } else if (flags.markTab && currentCharacter == '\t') {
@@ -110,9 +109,15 @@ void PrintFileContent(char *filename, Options flags) {
 }
 
 void FilesOutput(int argc, char **argv, Options flags, int optind) {
+  int globalCounter = 0;
+
   for (int i = optind; i < argc; i++) {
     if (IsFileExist(argv[i])) {
-      PrintFileContent(argv[i], flags);
+      FILE *file = fopen(argv[i], "r");
+      if (file != NULL) {
+        PrintFileContent(argv[i], flags, &globalCounter);
+        fclose(file);
+      }
     } else {
       fprintf(stderr, "s21_cat: %s No such file or directory\n", argv[i]);
     }
