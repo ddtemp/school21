@@ -14,8 +14,8 @@ typedef struct {
   int printNonPrintable;  // v
 } Options;
 
-int CatNoArgs(int fileDescriptor); 
+int CatNoArgs(int fileDescriptor);
 int IsFileExist(char *filename);
-void PrintFileContent(char *filename, Options flags, int *globalCounter);
+void PrintFileContent(int argc, char **argv, Options flags);
 void FilesOutput(int argc, char **argv, Options flags, int optind);
 Options CatReadFlags(int argc, char *argv[]);

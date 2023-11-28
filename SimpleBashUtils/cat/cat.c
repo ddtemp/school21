@@ -5,7 +5,7 @@ int main(int argc, char *argv[]) {
     CatNoArgs(STDIN_FILENO);
   else {
     Options flags = CatReadFlags(argc, argv);
-    FilesOutput(argc, argv, flags, optind);
+    PrintFileContent(argc, argv, flags);
   }
   return 0;
 }
@@ -69,53 +69,57 @@ Options CatReadFlags(int argc, char *argv[]) {
   return flags;
 }
 
-void PrintFileContent(char *filename, Options flags, int *globalCounter) {
-  FILE *file = NULL;
-  file = fopen(filename, "r");
-  int isCurrentLineEmpty = 0, isPrevLineEmpty = 0;
-  int currentCharacter = fgetc(file);
+void PrintFileContent(int argc, char **argv, Options flags) {
+  int isCurrentLineEmpty = 0, isPrevLineEmpty = 0, counter = 0;
   char prevCharacter = '\n';
-
-  while (currentCharacter != EOF) {
-    if (currentCharacter == '\n' && prevCharacter == '\n') {
-      isCurrentLineEmpty = 1;
-    } else {
-      isCurrentLineEmpty = 0;
-    }
-
-    if (!(flags.squeeze && isPrevLineEmpty && isCurrentLineEmpty)) {
-      if (prevCharacter == '\n') {
-        if (flags.numberAll || (flags.numberNonBlank && !isCurrentLineEmpty)) {
-          printf("%6d\t", ++(*globalCounter));
-        }
-      }
-      if (flags.markEndl && currentCharacter == '\n') {
-        printf("$\n");
-      } else if (flags.markTab && currentCharacter == '\t') {
-        printf("^I");
-      } else if (flags.printNonPrintable && currentCharacter < 32 &&
-                 currentCharacter != '\n' && currentCharacter != '\t') {
-        printf("^%c", currentCharacter + 64);
-      } else if (flags.printNonPrintable && currentCharacter == 127) {
-        printf("^?");
-      } else {
-        printf("%c", currentCharacter);
-      }
-    }
-    prevCharacter = currentCharacter;
-    isPrevLineEmpty = isCurrentLineEmpty;
-    currentCharacter = fgetc(file);
-  }
-}
-
-void FilesOutput(int argc, char **argv, Options flags, int optind) {
-  int globalCounter = 0;
 
   for (int i = optind; i < argc; i++) {
     if (IsFileExist(argv[i])) {
       FILE *file = fopen(argv[i], "r");
+      int currentCharacter = fgetc(file);
+      while (currentCharacter != EOF) {
+        if (currentCharacter == '\n' && prevCharacter == '\n') {
+          isCurrentLineEmpty = 1;
+        } else {
+          isCurrentLineEmpty = 0;
+        }
+
+        if (!(flags.squeeze && isPrevLineEmpty && isCurrentLineEmpty)) {
+          if (prevCharacter == '\n') {
+            if (flags.numberAll ||
+                (flags.numberNonBlank && !isCurrentLineEmpty)) {
+              printf("%6d\t", ++counter);
+            }
+          }
+          if (flags.markEndl && currentCharacter == '\n') {
+            printf("$\n");
+          } else if (flags.markTab && currentCharacter == '\t') {
+            printf("^I");
+          } else if (flags.printNonPrintable && currentCharacter < 32 &&
+                     currentCharacter != '\n' && currentCharacter != '\t') {
+            printf("^%c", currentCharacter + 64);
+          } else if (flags.printNonPrintable && currentCharacter == 127) {
+            printf("^?");
+          } else {
+            printf("%c", currentCharacter);
+          }
+        }
+        prevCharacter = currentCharacter;
+        isPrevLineEmpty = isCurrentLineEmpty;
+        currentCharacter = fgetc(file);
+      }
+    } else {
+      fprintf(stderr, "s21_cat: %s No such file or directory\n", argv[i]);
+    }
+  }
+}
+
+void FilesOutput(int argc, char **argv, Options flags, int optind) {
+  for (int i = optind; i < argc; i++) {
+    if (IsFileExist(argv[i])) {
+      FILE *file = fopen(argv[i], "r");
       if (file != NULL) {
-        PrintFileContent(argv[i], flags, &globalCounter);
+        PrintFileContent(argc, &argv[i], flags);
         fclose(file);
       }
     } else {
