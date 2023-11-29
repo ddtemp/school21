@@ -17,5 +17,4 @@ typedef struct {
 int CatNoArgs(int fileDescriptor);
 int IsFileExist(char *filename);
 void PrintFileContent(int argc, char **argv, Options flags);
-// void FilesOutput(int argc, char **argv, Options flags, int optind);
 Options CatReadFlags(int argc, char *argv[]);

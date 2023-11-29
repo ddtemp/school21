@@ -14,12 +14,11 @@ int CatNoArgs(int fileDescriptor) {
   char buffer[SIZE];
   int bytesWasRead = 0;
   bytesWasRead = read(fileDescriptor, buffer, SIZE);
-  if (bytesWasRead == -1) return -1;
   while (bytesWasRead > 0) {
     printf("%.*s", bytesWasRead, buffer);
     bytesWasRead = read(fileDescriptor, buffer, SIZE);
   }
-  return 0;
+  return bytesWasRead;
 }
 
 Options CatReadFlags(int argc, char *argv[]) {
@@ -114,21 +113,6 @@ void PrintFileContent(int argc, char **argv, Options flags) {
   }
 }
 
-/*
-void FilesOutput(int argc, char **argv, Options flags, int optind) {
-  for (int i = optind; i < argc; i++) {
-    if (IsFileExist(argv[i])) {
-      FILE *file = fopen(argv[i], "r");
-      if (file != NULL) {
-        PrintFileContent(argc, &argv[i], flags);
-        fclose(file);
-      }
-    } else {
-      fprintf(stderr, "s21_cat: %s No such file or directory\n", argv[i]);
-    }
-  }
-}
-*/
 int IsFileExist(char *filename) {
   int result = 0;
   FILE *file = NULL;
