@@ -1,14 +1,10 @@
-		s
-test
-
-
 
 str          !
 
 
-
-dd
-
-
+     
 
 	 end.
+
+
+
