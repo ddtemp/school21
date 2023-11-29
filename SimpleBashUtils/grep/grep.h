@@ -1,3 +1,6 @@
+#ifndef GREP_H
+#define GREP_H
+
 #include <getopt.h>
 #include <regex.h>
 #include <stdio.h>
@@ -22,14 +25,16 @@ typedef struct {
     int countMatches;
 } Options;
 
+int GrepReadFlags (int argc, char **argv, Options *config, char **template);
 void Grep(char *name, Options config, char *tmpl);
-void PrintMainData(char *str, Options *flags, char *tmpl, char *name);
+void PrintMainData(char *str, Options *options, char *tmpl, char *name);
 void ConfigF(Options *config, char **template, char *optarg);
 void ConfigE(Options *config, char **template, char *optarg);
 void ConfigO(regex_t compiledRegex, char *str, Options config);
 void PrintAuxData(Options config, char *path);
 void *IncreaseLengthStr(void *str, int size);
+int CreateTemplate(char **str, char *optarg);
 void SetupConfig(Options *config, int argc);
 void AddTemplate(char **str, char *optarg);
-int GrepReadFlags (int argc, char **argv, Options *config, char **template);
-int CreateTemplate(char **str, char *optarg);
+
+#endif // GREP_H
