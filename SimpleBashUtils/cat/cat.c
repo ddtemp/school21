@@ -114,6 +114,7 @@ void PrintFileContent(int argc, char **argv, Options flags) {
   }
 }
 
+/*
 void FilesOutput(int argc, char **argv, Options flags, int optind) {
   for (int i = optind; i < argc; i++) {
     if (IsFileExist(argv[i])) {
@@ -127,7 +128,7 @@ void FilesOutput(int argc, char **argv, Options flags, int optind) {
     }
   }
 }
-
+*/
 int IsFileExist(char *filename) {
   int result = 0;
   FILE *file = NULL;
