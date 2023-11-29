@@ -11,7 +11,6 @@ test: s21_cat tests/test_func_cat.sh
 	cd tests/ && ./test_func_cat.sh
 
 clean: 
-	rm -rf *.o
 	rm -rf s21_cat 
 	rm -rf tests/s21_cat
 
