@@ -27,7 +27,7 @@ gcov_report: s21_math.a tests/s21_math_test.c
 	genhtml -o ./report Coverage_Report.info
 	xdg-open ./report/index-sort-f.html
 
-check:
+style_check:
 	clang-format -style=Google -n *.c *.h
 
 rebuild: clean all
