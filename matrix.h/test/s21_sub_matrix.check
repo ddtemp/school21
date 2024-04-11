@@ -1,0 +1,119 @@
+#test sub_1
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+s21_create_matrix(1, 1, &A);
+s21_create_matrix(1, 1, &B);
+s21_create_matrix(1, 1, &C);
+A.matrix[0][0] = 38.12389;
+B.matrix[0][0] = -129.4910;
+C.matrix[0][0] = 167.61489;
+int res = s21_sub_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
+
+#test sub_2
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[4] = {121239.113, 2401.12392, -348901.2, 2389014};
+double B_nums[4] = {109910.10189, -19872409.1489, 3, 140912.5};
+double result_nums[4] = {11329.01111, 19874810.27282, -348904.2, 2248101.5};
+s21_create_matrix(2, 2, &A);
+s21_create_matrix(2, 2, &B);
+s21_create_matrix(2, 2, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int res = s21_sub_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
+
+#test sub_3
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[9] = {121239.122013, 2401.12392,   -348901.2, 2389014,
+                    912039.12389,  129034.23400, 0,         1203,
+                    9000000.123};
+double B_nums[9] = {
+    109428035910.1024189, -19872409.1489, 3, 140912.5, 0, 12930124, 1942.3489,
+    102.234891,           10230912.1};
+double result_nums[9] = {
+    -109427914670.9804059, 19874810.27282, -348904.2,  2248101.5,
+    912039.12389,          -12801089.766,  -1942.3489, 1100.765109,
+    -1230911.977};
+s21_create_matrix(3, 3, &A);
+s21_create_matrix(3, 3, &B);
+s21_create_matrix(3, 3, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int res = s21_sub_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
+
+#test sub_4
+matrix_t A;
+int res = s21_sub_matrix(NULL, &A, &A);
+ck_assert_int_eq(res, 1);
+
+#test sub_5
+matrix_t A;
+matrix_t B;
+matrix_t C;
+s21_create_matrix(2, 2, &A);
+s21_create_matrix(2, 1, &B);
+int res = s21_sub_matrix(&A, &B, &C);
+ck_assert_int_eq(res, 2);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+
+#test sub_6
+matrix_t A;
+matrix_t B;
+matrix_t C;
+s21_create_matrix(10, 10, &A);
+s21_create_matrix(10, 10, &B);
+A.rows = 0;
+int res = s21_sub_matrix(&A, &B, &C);
+ck_assert_int_eq(res, 1);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+
+#test sub_7
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[6] = {1, 2, 3, 4, 5, 6};
+double B_nums[6] = {2, 3, 4, 5, 6, 7};
+double result_nums[6] = {-1, -1, -1, -1, -1, -1};
+s21_create_matrix(3, 2, &A);
+s21_create_matrix(3, 2, &B);
+s21_create_matrix(3, 2, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int result = s21_sub_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(result, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
