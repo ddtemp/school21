@@ -1,0 +1,60 @@
+#test multi_num_1
+matrix_t A;
+int res = s21_mult_number(NULL, 10, &A);
+ck_assert_int_eq(res, 1);
+
+#test multi_num_2
+matrix_t A;
+matrix_t C;
+s21_create_matrix(10, 10, &A);
+A.rows = 0;
+int res = s21_mult_number(&A, 10, &C);
+ck_assert_int_eq(res, 1);
+s21_remove_matrix(&A);
+
+#test multi_num_3
+matrix_t A;
+double number = 3.12890;
+matrix_t B;
+matrix_t C;
+double A_nums[4] = {121239.113, 2401.12392, -348901.2, 2389014};
+double result_nums[4] = {379345.0606657, 7512.876633288, -1091676.96468,
+                         7474985.9046};
+s21_create_matrix(2, 2, &A);
+s21_create_matrix(2, 2, &B);
+set_matrix(A_nums, &A);
+set_matrix(result_nums, &B);
+int result = s21_mult_number(&A, number, &C);
+ck_assert_int_eq(s21_eq_matrix(&B, &C), 1);
+ck_assert_int_eq(result, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+
+#test multi_num_4
+matrix_t A;
+double number = 3901.904;
+matrix_t B;
+matrix_t C;
+double A_nums[9] = {121239.122013, 2401.12392,   -348901.2, 2389014,
+                    912039.12389,  129034.23400, 0,         1203,
+                    9000000.123};
+double result_nums[9] = {473063415.139012752,
+                         9368955.02794368,
+                         -1361378987.8848,
+                         9321703282.656,
+                         3558689105.66288656,
+                         503479193.781536,
+                         0,
+                         4693990.512,
+                         35117136479.934192};
+s21_create_matrix(3, 3, &A);
+s21_create_matrix(3, 3, &B);
+set_matrix(A_nums, &A);
+set_matrix(result_nums, &B);
+int res = s21_mult_number(&A, number, &C);
+ck_assert_int_eq(s21_eq_matrix(&B, &C), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);

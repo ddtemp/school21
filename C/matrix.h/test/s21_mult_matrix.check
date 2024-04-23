@@ -1,0 +1,94 @@
+#test multi_mat_1
+matrix_t A;
+int result = s21_mult_matrix(NULL, &A, &A);
+ck_assert_int_eq(result, 1);
+
+#test multi_mat_2
+matrix_t A;
+matrix_t B;
+matrix_t C;
+s21_create_matrix(10, 10, &A);
+s21_create_matrix(10, 10, &B);
+A.rows = 0;
+int result = s21_mult_matrix(&A, &B, &C);
+ck_assert_int_eq(result, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+
+#test multi_mat_3
+matrix_t A;
+matrix_t B;
+matrix_t C;
+s21_create_matrix(2, 3, &A);
+s21_create_matrix(2, 3, &B);
+int result = s21_mult_matrix(&A, &B, &C);
+ck_assert_int_eq(result, 2);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+
+#test multi_mat_4
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[6] = {1.2, 2.4, 3.6, 4.8, 6.0, 7.2};
+double B_nums[6] = {3.5, 7.0, 10.5, 14.0, 17.5, 21.0};
+double result_nums[9] = {92.4, 117.6, 205.8, 268.8};
+s21_create_matrix(2, 3, &A);
+s21_create_matrix(3, 2, &B);
+s21_create_matrix(2, 2, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int res = s21_mult_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
+
+#test multi_mat_5
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[9] = {1.2, 2.4, 3.6, 4.8, 6.0, 7.2, 8.4, 9.6, 10.8};
+double B_nums[9] = {3.5, 7.0, 10.5, 14.0, 17.5, 21.0, 24.5, 28.0, 31.5};
+double result_nums[9] = {126,   151.2, 176.4, 277.2, 340.2,
+                         403.2, 428.4, 529.2, 630};
+s21_create_matrix(3, 3, &A);
+s21_create_matrix(3, 3, &B);
+s21_create_matrix(3, 3, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int res = s21_mult_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
+
+#test multi_mat_6
+matrix_t A;
+matrix_t B;
+matrix_t C;
+matrix_t D;
+double A_nums[6] = {1.2, 2.4, 3.6, 4.8, 6.0, 7.2};
+double B_nums[6] = {3.5, 7.0, 10.5, 14.0, 17.5, 21.0};
+double result_nums[9] = {37.8, 50.4, 63, 79.8, 109.2, 138.6, 121.8, 168, 214.2};
+s21_create_matrix(3, 2, &A);
+s21_create_matrix(2, 3, &B);
+s21_create_matrix(3, 3, &C);
+set_matrix(A_nums, &A);
+set_matrix(B_nums, &B);
+set_matrix(result_nums, &C);
+int res = s21_mult_matrix(&A, &B, &D);
+ck_assert_int_eq(s21_eq_matrix(&C, &D), 1);
+ck_assert_int_eq(res, 0);
+s21_remove_matrix(&A);
+s21_remove_matrix(&B);
+s21_remove_matrix(&C);
+s21_remove_matrix(&D);
